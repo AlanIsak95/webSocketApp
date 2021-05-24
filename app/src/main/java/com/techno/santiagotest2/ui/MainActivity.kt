@@ -19,6 +19,8 @@ import com.techno.santiagotest2.model.ResponseWebSocket
 import com.techno.santiagotest2.interfaces.IOnMessageReceiver
 import com.techno.santiagotest2.utils.Constans.Companion.CHANNEL_TEXT
 import com.techno.santiagotest2.utils.Constans.Companion.CONNECTED
+import com.techno.santiagotest2.utils.Constans.Companion.JSON_CHANNEL
+import com.techno.santiagotest2.utils.Constans.Companion.JSON_SEND_DATA
 import com.techno.santiagotest2.utils.Constans.Companion.WEBSOCKET_OFF_TEXT
 import com.techno.santiagotest2.utils.Constans.Companion.WEBSOCKET_TEXT
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +29,7 @@ import okhttp3.Request
 import okhttp3.WebSocket
 import org.json.JSONObject
 import javax.inject.Inject
+import javax.inject.Named
 
 
 @AndroidEntryPoint
@@ -38,10 +41,18 @@ class MainActivity : AppCompatActivity(), IOnMessageReceiver {
     @Inject
     lateinit var request: Request
 
+    @Inject
+    @Named(JSON_CHANNEL)
+    lateinit var jsonChannel :JSONObject
+
+    @Inject
+    @Named(JSON_SEND_DATA)
+    lateinit var jsonSendData :JSONObject
+
     lateinit var webSocket : WebSocket
     private lateinit var socketListener: SocketListener
     private lateinit var btn : Button
-    private lateinit var connectText : TextView
+    private lateinit var textConnectionStatus : TextView
     private lateinit var textChannelStatus : TextView
     private lateinit var responseValue : TextView
     private lateinit var detailProgress : TextView
@@ -64,7 +75,7 @@ class MainActivity : AppCompatActivity(), IOnMessageReceiver {
     private fun initView() {
 
         btn                 = findViewById(R.id.sendDataBtn)
-        connectText         = findViewById(R.id.textConnectionStatus)
+        textConnectionStatus= findViewById(R.id.textConnectionStatus)
         textToSend          = findViewById(R.id.textToSend)
         textChannelStatus   = findViewById(R.id.textChannelStatus)
         responseValue       = findViewById(R.id.responseValue)
@@ -87,18 +98,8 @@ class MainActivity : AppCompatActivity(), IOnMessageReceiver {
 
         Handler().postDelayed(
             {
-
-                var json1 = JSONObject().apply {
-                    put("topic", "dsa:test")
-                    put("event", "phx_join")
-                    put("ref", 1)
-                    put("payload", JSONObject())
-                }
-
-                webSocket.send(json1.toString())
-
-            },
-            6000 // 6 seg
+                webSocket.send(jsonChannel.toString())
+            },6000 // 6 seg
         )
 
     }
@@ -131,14 +132,11 @@ class MainActivity : AppCompatActivity(), IOnMessageReceiver {
 
     private fun sendData() {
 
-        var json = JSONObject().apply {
-            put("topic", "dsa:test")
-            put("event", "send")
-            put("ref", 12)
+        jsonSendData.apply {
             put("payload", JSONObject().apply { put("value", textToSend.text.toString()) })
         }
 
-        webSocket.send(json.toString())
+        webSocket.send(jsonSendData.toString())
 
     }
 
@@ -166,7 +164,7 @@ class MainActivity : AppCompatActivity(), IOnMessageReceiver {
 
         if (string == CONNECTED){
 
-            connectText.text = WEBSOCKET_TEXT
+            textConnectionStatus.text = WEBSOCKET_TEXT
 
         }else{
 
@@ -207,7 +205,7 @@ class MainActivity : AppCompatActivity(), IOnMessageReceiver {
         runOnUiThread{
 
             showProgress(false)
-            connectText.text = WEBSOCKET_OFF_TEXT
+            textConnectionStatus.text = WEBSOCKET_OFF_TEXT
             textChannelStatus.text = string
 
         }
