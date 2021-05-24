@@ -74,6 +74,8 @@ class MainActivity : AppCompatActivity(), IOnMessageReceiver {
 
     private fun initView() {
 
+        //todo no me dio tiempo de meterle ViewBinding, El WebSocket me quito mucho tiempo D: Salu2
+
         btn                 = findViewById(R.id.sendDataBtn)
         textConnectionStatus= findViewById(R.id.textConnectionStatus)
         textToSend          = findViewById(R.id.textToSend)
